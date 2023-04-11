@@ -3,21 +3,69 @@
   <div class="my-footer">
     <!-- 全选 -->
     <div class="custom-control custom-checkbox">
-      <input type="checkbox" class="custom-control-input" id="footerCheck" />
+      <input
+        type="checkbox"
+        class="custom-control-input"
+        id="footerCheck"
+        v-model="isAll"
+      />
       <label class="custom-control-label" for="footerCheck">全选</label>
     </div>
     <!-- 合计 -->
     <div>
       <span>合计:</span>
-      <span class="price">¥ 0</span>
+      <span class="price">¥ {{ allPrice }}</span>
     </div>
     <!-- 按钮 -->
-    <button type="button" class="footer-btn btn btn-primary">结算 ( 0 )</button>
+    <button type="button" class="footer-btn btn btn-primary">
+      结算 ( {{ allCount }} )
+    </button>
   </div>
 </template>
-
 <script>
-export default {}
+export default {
+  props: {
+    arr: Array,
+  },
+  computed: {
+    /**
+     * 全选和小选框互相影响的思路是什么
+     * 全选 - 关联计算属性 - set方法 - 同步所有小选
+     * 小选 - 触发计算属性的get方法 - 统计后返回全选
+     */
+    isAll: {
+      set(val) {
+        // val就是表单的值true/false
+        // console.log(val)
+        this.$emit('changeAll', val)
+      },
+      get() {
+        // 查找是否有没有勾选的表单，若有返回false
+        return this.arr.every((obj) => obj.goods_state === true)
+      },
+    },
+    // 商品数量
+    allCount() {
+      return this.arr.reduce((sum, obj) => {
+        if (obj.goods_state === true) {
+          // 为true时数量加
+          sum += obj.goods_count
+        }
+        return sum
+      }, 0)
+    },
+    // 商品总价
+    allPrice(){
+      return this.arr.reduce((sum, obj) => {
+        if (obj.goods_state) {
+          // 为true时数量加
+          sum += obj.goods_count * obj.goods_price
+        }
+        return sum
+      }, 0)
+    }
+  },
+}
 </script>
 
 <style lang="less" scoped>
